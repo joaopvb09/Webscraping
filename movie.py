@@ -1,26 +1,38 @@
 import pandas as pd
 import random
 
-# Load the movie data from CSV
+# Load movies and ratings data
 movies_data = pd.read_csv('movies.csv')
+ratings_data = pd.read_csv('ratings.csv')
 
-# Ask for user input genre
+# Input genre
 genre = input("Enter a genre: ")
 
-# Filter movies based on the chosen genre
-genre_movies = movies_data[movies_data['genres'].str.contains(genre)]
+# Filter movies by genre
+movies_filtered = movies_data[movies_data['genres'].str.contains(genre)]
 
-# Check if any movies are found for the given genre
-if genre_movies.empty:
-    print("No movies found for the given genre.")
-else:
-    # Set the random seed
-    random.seed()
+# Randomly select 10 unique movies
+random_movies = random.sample(list(movies_filtered['title']), 10)
 
-    # Select 10 random movies from the genre
-    random_movies = genre_movies.sample(n=10)
+# Display movie ratings
+print("Ratings:")
+for movie in random_movies:
+    # Get the movie ID from movies data
+    movie_id = movies_data[movies_data['title'] == movie]['movieId'].iloc[0]
 
-    # Display the selected movies
-    print("Random Movies:")
-    for _, movie in random_movies.iterrows():
-        print(f"Title: {movie['title']} - Genres: {movie['genres']}")
+    # Filter ratings by movie ID
+    ratings = ratings_data[ratings_data['movieId'] == movie_id]
+
+    if not ratings.empty:
+        # Calculate the average rating for the movie
+        average_rating = ratings['rating'].mean()
+
+        if pd.isnull(average_rating):
+            # If there is no average rating available
+            print(f"Movie: {movie} - Average Rating: NO RATING")
+        else:
+            # If there is an average rating available
+            print(f"Movie: {movie} - Average Rating: {average_rating:.2f}")
+    else:
+        # If no ratings found for the movie
+        print(f"Movie: {movie} - Average Rating: NO RATING")
